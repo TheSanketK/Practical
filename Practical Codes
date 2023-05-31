@@ -1,0 +1,823 @@
+https://codeshare.io/pq970E
+
+// --------------------------------------------------- Merge Sort --------------------------------------------------
+#include<iostream>
+#include<stdlib.h>
+#include<omp.h>
+using namespace std;
+
+
+void mergesort(int a[],int i,int j);
+void merge(int a[],int i1,int j1,int i2,int j2);
+
+void mergesort(int a[],int i,int j)
+{
+	int mid;
+	if(i<j)
+	{
+    	mid=(i+j)/2;
+   	 
+    	#pragma omp parallel sections
+    	{
+
+        	#pragma omp section
+        	{
+            	mergesort(a,i,mid);   	 
+        	}
+
+        	#pragma omp section
+        	{
+            	mergesort(a,mid+1,j);    
+        	}
+    	}
+
+    	merge(a,i,mid,mid+1,j);    
+	}
+
+}
+ 
+void merge(int a[],int i1,int j1,int i2,int j2)
+{
+	int temp[1000];    
+	int i,j,k;
+	i=i1;    
+	j=i2;    
+	k=0;
+    
+	while(i<=j1 && j<=j2)    
+	{
+    	if(a[i]<a[j])
+    	{
+        	temp[k++]=a[i++];
+    	}
+    	else
+    	{
+        	temp[k++]=a[j++];
+    }    
+	}
+    
+	while(i<=j1)    
+	{
+    	temp[k++]=a[i++];
+	}
+   	 
+	while(j<=j2)    
+	{
+    	temp[k++]=a[j++];
+	}
+   	 
+	for(i=i1,j=0;i<=j2;i++,j++)
+	{
+    	a[i]=temp[j];
+	}    
+}
+
+
+int main()
+{
+	int *a,n,i;
+	cout<<"\n enter total no of elements=>";
+	cin>>n;
+	a= new int[n];
+
+	cout<<"\n enter elements=>";
+	for(i=0;i<n;i++)
+	{
+    	cin>>a[i];
+	}
+   //	 start=.......
+//#pragma omp…..
+	mergesort(a, 0, n-1);
+//          stop…….
+	cout<<"\n sorted array is=>";
+	for(i=0;i<n;i++)
+	{
+    	cout<<"\n"<<a[i];
+	}
+  	// Cout<<Stop-Start
+}
+
+
+
+
+
+
+
+
+//********** ------------------------------------------Bubble Sort-------------------------------------------- ********
+
+#include<iostream>
+#include<stdlib.h>
+#include<omp.h>
+using namespace std;
+
+void bubble(int *, int);
+void swap(int &, int &);
+
+
+void bubble(int *a, int n)
+{
+    for(  int i = 0;  i < n;  i++ )
+     {  	 
+   	 int first = i % 2; 	 
+
+   	 #pragma omp parallel for shared(a,first)
+   	 for(  int j = first;  j < n-1;  j += 2  )
+   	   {  	 
+   		 if(  a[ j ]  >  a[ j+1 ]  )
+   		  {  	 
+     			 swap(  a[ j ],  a[ j+1 ]  );
+   		  }  	 
+   		   }  	 
+     }
+}
+
+
+void swap(int &a, int &b)
+{
+
+    int test;
+    test=a;
+    a=b;
+    b=test;
+
+}
+
+int main()
+{
+
+    int *a,n;
+    cout<<"\n enter total no of elements=>";
+    cin>>n;
+    a=new int[n];
+    cout<<"\n enter elements=>";
+    for(int i=0;i<n;i++)
+    {
+   	 cin>>a[i];
+    }
+    
+    bubble(a,n);
+    
+    cout<<"\n sorted array is=>";
+    for(int i=0;i<n;i++)
+    {
+   	 cout<<a[i]<<endl;
+    }
+
+
+return 0;
+}
+
+
+
+
+
+//************* ---------------------------------BFS--------------------------------------- ***************
+
+#include<iostream>
+#include<stdlib.h>
+#include<queue>
+using namespace std;
+
+
+class node
+{
+   public:
+    
+    node *left, *right;
+    int data;
+
+};    
+
+class Breadthfs
+{
+ 
+ public:
+ 
+ node *insert(node *, int);
+ void bfs(node *);
+ 
+};
+
+
+node *insert(node *root, int data)
+// inserts a node in tree
+{
+
+    if(!root)
+    {
+   	 
+   	 root=new node;
+   	 root->left=NULL;
+   	 root->right=NULL;
+   	 root->data=data;
+   	 return root;
+    }
+
+    queue<node *> q;
+    q.push(root);
+    
+    while(!q.empty())
+    {
+
+   	 node *temp=q.front();
+   	 q.pop();
+    
+   	 if(temp->left==NULL)
+   	 {
+   		 
+   		 temp->left=new node;
+   		 temp->left->left=NULL;
+   		 temp->left->right=NULL;
+   		 temp->left->data=data;    
+   		 return root;
+   	 }
+   	 else
+   	 {
+
+   	 q.push(temp->left);
+
+   	 }
+
+   	 if(temp->right==NULL)
+   	 {
+   		 
+   		 temp->right=new node;
+   		 temp->right->left=NULL;
+   		 temp->right->right=NULL;
+   		 temp->right->data=data;    
+   		 return root;
+   	 }
+   	 else
+   	 {
+
+   	 q.push(temp->right);
+
+   	 }
+
+    }
+    
+}
+
+
+void bfs(node *head)
+{
+
+   	 queue<node*> q;
+   	 q.push(head);
+   	 
+   	 int qSize;
+   	 
+   	 while (!q.empty())
+   	 {
+   		 qSize = q.size();
+   		 #pragma omp parallel for
+            	//creates parallel threads
+   		 for (int i = 0; i < qSize; i++)
+   		 {
+   			 node* currNode;
+   			 #pragma omp critical
+   			 {
+   			   currNode = q.front();
+   			   q.pop();
+   			   cout<<"\t"<<currNode->data;
+   			   
+   			 }// prints parent node
+   			 #pragma omp critical
+   			 {
+   			 if(currNode->left)// push parent's left node in queue
+   				 q.push(currNode->left);
+   			 if(currNode->right)
+   				 q.push(currNode->right);
+   			 }// push parent's right node in queue   	 
+
+   		 }
+   	 }
+
+}
+
+int main(){
+
+    node *root=NULL;
+    int data;
+    char ans;
+    
+    do
+    {
+   	 cout<<"\n enter data=>";
+   	 cin>>data;
+   	 
+   	 root=insert(root,data);
+    
+   	 cout<<"do you want insert one more node?";
+   	 cin>>ans;
+    
+    }while(ans=='y'||ans=='Y');
+    
+    bfs(root);
+    
+    return 0;
+}
+
+
+
+
+//************ ---------------------------------------DFS -------------------------------------------------------************
+
+#include <iostream>
+#include <vector>
+#include <stack>
+#include <omp.h>
+
+using namespace std;
+
+const int MAX = 100000;
+vector<int> graph[MAX];
+bool visited[MAX];
+
+void dfs(int node) {
+	stack<int> s;
+	s.push(node);
+
+	while (!s.empty()) {
+    	int curr_node = s.top();
+    	s.pop();
+
+    	if (!visited[curr_node]) {
+        	visited[curr_node] = true;
+        	
+        	if (visited[curr_node]) {
+        	cout << curr_node << " ";
+    	}
+
+        	#pragma omp parallel for
+        	for (int i = 0; i < graph[curr_node].size(); i++) {
+            	int adj_node = graph[curr_node][i];
+            	if (!visited[adj_node]) {
+                	s.push(adj_node);
+            	}
+        	}
+    	}
+	}
+}
+
+int main() {
+	int n, m, start_node;
+	cout << "Enter No of  start node:" ;
+	cin >> n >> m >> start_node;
+         //n: node,m:edges
+         
+cout << "Enter Pair of edges:" ;
+	for (int i = 0; i < m; i++) {
+    	int u, v;
+    		
+    	cin >> u >> v;
+//u and v: Pair of edges
+    	graph[u].push_back(v);
+    	graph[v].push_back(u);
+	}
+
+	#pragma omp parallel for
+	for (int i = 0; i < n; i++) {
+    	visited[i] = false;
+	}
+
+	dfs(start_node);
+
+/*	for (int i = 0; i < n; i++) {
+    	if (visited[i]) {
+        	cout << i << " ";
+    	}
+	}*/
+
+	return 0;
+}
+
+
+
+//************ min max *********************************************************************************************************************
+
+
+#include <iostream>
+//#include <vector>
+#include <omp.h>
+#include <climits>
+using namespace std;
+void min_reduction(int arr[], int n) {
+  int min_value = INT_MAX;
+  #pragma omp parallel for reduction(min: min_value)
+  for (int i = 0; i < n; i++) {
+	if (arr[i] < min_value) {
+  	min_value = arr[i];
+	}
+  }
+  cout << "Minimum value: " << min_value << endl;
+}
+
+void max_reduction(int arr[], int n) {
+  int max_value = INT_MIN;
+  #pragma omp parallel for reduction(max: max_value)
+  for (int i = 0; i < n; i++) {
+	if (arr[i] > max_value) {
+  	max_value = arr[i];
+	}
+  }
+  cout << "Maximum value: " << max_value << endl;
+}
+
+void sum_reduction(int arr[], int n) {
+  int sum = 0;
+   #pragma omp parallel for reduction(+: sum)
+   for (int i = 0; i < n; i++) {
+	sum += arr[i];
+  }
+  cout << "Sum: " << sum << endl;
+}
+
+void average_reduction(int arr[], int n) {
+  int sum = 0;
+  #pragma omp parallel for reduction(+: sum)
+  for (int i = 0; i < n; i++) {
+	sum += arr[i];
+  }
+  cout << "Average: " << (double)sum / (n-1) << endl;
+}
+
+int main() {
+    int *arr,n;
+    cout<<"\n enter total no of elements=>";
+    cin>>n;
+    arr=new int[n];
+    cout<<"\n enter elements=>";
+    for(int i=0;i<n;i++)
+    {
+   	 cin>>arr[i];
+    }
+
+//   int arr[] = {5, 2, 9, 1, 7, 6, 8, 3, 4};
+//   int n = size(arr);
+
+  min_reduction(arr, n);
+  max_reduction(arr, n);
+  sum_reduction(arr, n);
+  average_reduction(arr, n);
+}
+
+//************* IMDB ***********
+
+import numpy as np
+from tensorflow import keras
+from keras.datasets import imdb
+from keras.utils import pad_sequences
+from keras.models import Sequential
+from keras.layers import Dense, Embedding, GlobalAveragePooling1D
+
+l
+,
+# Load the IMDB dataset
+(X_train, y_train), (X_test, y_test) = imdb.load_data(num_words=10000)
+
+# Preprocess the data
+max_len = 200  # Maximum sequence length
+X_train = pad_sequences(X_train, maxlen=max_len)
+X_test = pad_sequences(X_test, maxlen=max_len)
+
+# Create the deep neural network model
+model = Sequential()
+model.add(Embedding(10000, 16, input_length=max_len))
+model.add(GlobalAveragePooling1D())
+model.add(Dense(16, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])Q
+model.summary()
+
+# Train the model
+model.fit(X_train, y_train, epochs=3, batch_size=32, validation_split=0.1)
+
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+
+score = model.evaluate(X_test,y_test,verbose=0)
+print("Test Loss", score[0])
+print("Test Accuracy", score[1])
+
+
+
+
+
+#  ******************************* OCR MULTICLASS CLASSIFICATION USING DNN ****************************************************************************
+
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from keras.datasets import mnist
+from keras.models import Sequential
+from keras.layers import Dense
+
+
+# Load the MNIST dataset
+(X_train, y_train), (X_test, y_test) = mnist.load_data()
+
+# Dataset description
+print("Dataset Description:")
+print("Training samples:", X_train.shape[0])
+print("Testing samples:", X_test.shape[0])
+print("Image shape:", X_train.shape[1:])
+
+# Dataset visualization
+fig, axes = plt.subplots(2, 5, figsize=(10, 5))
+axes = axes.flatten()
+
+for i, ax in enumerate(axes):
+    ax.imshow(X_train[i], cmap='gray')
+    ax.axis('off')
+    ax.set_title(f"Label: {y_train[i]}")
+
+plt.tight_layout()
+plt.show()
+
+# Print dataset head and tail
+print("Dataset Head:")
+print(X_train[:5])
+print(y_train[:5])
+
+print("Dataset Tail:")
+print(X_train[-5:])
+print(y_train[-5:])
+
+# Preprocess the data
+X_train = X_train.reshape(-1, 28 * 28) / 255.0
+X_test = X_test.reshape(-1, 28 * 28) / 255.0
+
+# Create the neural network model
+model = Sequential()
+model.add(Dense(256, activation='relu', input_shape=(28 * 28,)))
+model.add(Dense(128, activation='relu'))
+model.add(Dense(10, activation='softmax'))
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+model.summary()
+
+# Train the model
+history = model.fit(X_train, y_train, epochs=10, batch_size=32, validation_split=0.1)
+
+
+
+# Plot the training and validation loss
+plt.figure(figsize=(8, 5))
+plt.plot(history.history['loss'], label='Training Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Training and Validation Loss')
+plt.legend()
+plt.show()
+
+# Plot the training and validation accuracy
+plt.figure(figsize=(8, 5))
+plt.plot(history.history['accuracy'], label='Training Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('Training and Validation Accuracy')
+plt.legend()
+plt.show()
+
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+b
+# Evaluate the model
+loss, accuracy = model.evaluate(X_test, y_test)
+print("Test Loss:", loss)
+print("Test Accuracy:", accuracy)
+
+# Visualization of predictions
+fig, axes = plt.subplots(2, 2, figsize=(15, 15))
+axes = axes.flatten()
+
+for i, ax in enumerate(axes):
+    ax.imshow(X_test[i].reshape(28, 28), cmap='gray')
+    ax.axis('off')
+    ax.set_title(f"Pred: {y_pred[i]}, True: {y_test[i]}")
+
+plt.tight_layout()
+plt.show()
+
+
+
+
+# ----BINARY CLASSIFICATION POSITIVE NEGATIVE REVIEW IMDB WITH VISUALIZATION-------------------------------------
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from keras.datasets import imdb
+from keras.utils import pad_sequences
+from keras.models import Sequential
+from keras.layers import Dense
+
+
+# Load the IMDB dataset
+(X_train, y_train), (X_test, y_test) = imdb.load_data(num_words=10000)
+
+# Preprocess the data
+max_len = 200  # Maximum sequence length
+X_train = pad_sequences(X_train, maxlen=max_len)
+X_test = pad_sequences(X_test, maxlen=max_len)
+
+# Display a few samples from the dataset
+word_index = imdb.get_word_index()
+reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
+
+def decode_review(review):
+    return ' '.join([reverse_word_index.get(i - 3,"-" ) for i in review])
+
+print("Sample Positive Review:")
+print(decode_review(X_train[6]))
+print("Sample Negative Review:")
+print(decode_review(X_train[5]))
+
+# Create the deep neural network model
+model = Sequential()
+model.add(Dense(256, activation='relu', input_shape=(max_len,)))
+model.add(Dense(128, activation='relu'))
+model.add(Dense(128, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+model.summary()
+
+# Train the model
+history = model.fit(X_train, y_train, epochs=10, batch_size=32, validation_split=0.1)
+
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+
+# Calculate the accuracy of the model
+score = model.evaluate(X_test,y_test,verbose=0)
+print("Test Loss", score[0])
+print("Test Accuracy", score[1])
+
+# Plot the training and validation accuracy
+plt.figure(figsize=(8, 5))
+plt.plot(history.history['accuracy'], label='Training Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('Training and Validation Accuracy')
+plt.legend()
+plt.show()
+
+# Visualize a few sample predictions
+fig, axes = plt.subplots(2, 5, figsize=(12, 6))
+axes = axes.flatten()
+
+for i, ax in enumerate(axes):
+    index = np.random.randint(0, len(X_test))
+    review = decode_review(X_test[index])
+    pred_label = 'Positive' if y_pred[index] == 1 else 'Negative'
+    true_label = 'Positive' if y_test[index] == 1 else 'Negative'
+    color = 'green' if pred_label == true_label else 'red'
+    ax.text(0.5, 0.5, f"Pred: {pred_label}\nTrue: {true_label}", color=color, fontsize=12, ha='center')
+    ax.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# -----FASHION MNIST
+
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from keras.datasets import fashion_mnist
+from keras.models import Sequential
+from keras.layers import Dense
+from sklearn.metrics import accuracy_score
+
+# Load the MNIST Fashion dataset
+(X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
+
+# Dataset description
+print("Dataset Description:")
+print("Training samples:", X_train.shape[0])
+print("Testing samples:", X_test.shape[0])
+print("Image shape:", X_train.shape[1:])
+
+# Map label indices to class names
+class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
+               'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
+
+# Dataset visualization
+fig, axes = plt.subplots(2, 5, figsize=(10, 5))
+axes = axes.flatten()
+
+for i, ax in enumerate(axes):
+    ax.imshow(X_train[i], cmap='gray')
+    ax.axis('off')
+    ax.set_title(class_names[y_train[i]])
+
+plt.tight_layout()
+plt.show()
+
+# Preprocess the data
+X_train = X_train.reshape(-1, 28 * 28) / 255.0
+X_test = X_test.reshape(-1, 28 * 28) / 255.0
+
+# Create the neural network model
+model = Sequential()
+model.add(Dense(256, activation='relu', input_shape=(28 * 28,)))
+model.add(Dense(128, activation='relu'))
+model.add(Dense(10, activation='softmax'))
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+model.summary()
+
+# Train the model
+history = model.fit(X_train, y_train, epochs=10, batch_size=32, validation_split=0.1)
+
+# Evaluate the model
+loss, accuracy = model.evaluate(X_test, y_test)
+print("Test Loss:", loss)
+print("Test Accuracy:", accuracy)
+
+# Plot the training and validation loss
+plt.figure(figsize=(8, 5))
+plt.plot(history.history['loss'], label='Training Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Training and Validation Loss')
+plt.legend()
+plt.show()
+
+# Plot the training and validation accuracy
+plt.figure(figsize=(8, 5))
+plt.plot(history.history['accuracy'], label='Training Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('Training and Validation Accuracy')
+plt.legend()
+plt.show()
+
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+
+# Calculate the accuracy of the model
+score = model.evaluate(X_test,y_test,verbose=0)
+print("Test Loss", score[0])
+print("Test Accuracy", score[1])
+
+
+
+
+# ---------------------------------------------------------------------------- BOSTON HOUSING LINEAR REFRESSION DNN -----------------------------------------------
+
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from keras.datasets import boston_housing
+from keras.models import Sequential
+from keras.layers import Dense
+from sklearn.metrics import mean_squared_error
+
+# Load the Boston Housing dataset
+(X_train, y_train), (X_test, y_test) = boston_housing.load_data()
+
+# Dataset description
+print("Dataset Description:")
+print("Training samples:", X_train.shape[0])
+print("Testing samples:", X_test.shape[0])
+print("Number of features:", X_train.shape[1])
+
+# Convert the data into a pandas DataFrame
+column_names = ['CRIM', 'ZN', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE', 'DIS', 'RAD', 'TAX', 'PTRATIO', 'B', 'LSTAT', 'MEDV']
+df = pd.DataFrame(np.concatenate((X_train, y_train.reshape(-1, 1)), axis=1), columns=column_names)
+
+# Dataset head and tail 
+print("Dataset Head:")
+print(df.head())
+
+print("Dataset Tail:")
+print(df.tail())
+
+# Preprocess the data
+mean = X_train.mean(axis=0)
+std = X_train.std(axis=0)
+X_train = (X_train - mean) / std
+X_test = (X_test - mean) / std
+
+# Create the neural network model
+model = Sequential()
+model.add(Dense(64, activation='relu', input_shape=(X_train.shape[1],)))
+model.add(Dense(64, activation='relu'))
+model.add(Dense(1))
+model.compile(optimizer='adam', loss='mean_squared_error')
+model.summary()
+
+# Train the model
+history = model.fit(X_train, y_train, epochs=100, batch_size=32, validation_split=0.2, verbose=0)
+
+# Evaluate the model
+y_pred = model.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+print("Mean Squared Error:", mse)
+
+	return 0;
+}
